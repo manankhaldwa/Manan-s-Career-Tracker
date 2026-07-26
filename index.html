@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Track</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0f1115">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Track">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<style>
+:root{
+  --bg:#0f1115;--card:#181b22;--card2:#21252e;--line:#2b3140;
+  --tx:#e9ebf0;--tx2:#98a1b0;--tx3:#69717f;
+  --ok:#4ade80;--warn:#fbbf24;--bad:#f87171;--acc:#60a5fa;--vio:#a78bfa;--cy:#22d3ee;--ice:#7dd3fc;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:var(--bg);color:var(--tx);
+  font:15px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
+body{padding:env(safe-area-inset-top) 0 calc(74px + env(safe-area-inset-bottom))}
+main{max-width:620px;margin:0 auto;padding:14px}
+h1{font-size:17px;margin:4px 0 14px;display:flex;justify-content:space-between;align-items:baseline}
+h1 small{color:var(--tx3);font-weight:400;font-size:12px}
+h2{font-size:11px;letter-spacing:.07em;text-transform:uppercase;color:var(--tx3);margin:0 0 10px;font-weight:600}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:15px;margin-bottom:12px}
+.row{display:flex;gap:12px}.row>*{flex:1}
+.big{font-size:30px;font-weight:650;letter-spacing:-.02em;font-variant-numeric:tabular-nums;line-height:1.1}
+.u{font-size:14px;color:var(--tx3);font-weight:400}
+.lbl{font-size:10.5px;letter-spacing:.07em;text-transform:uppercase;color:var(--tx3);margin-bottom:5px}
+.sub{font-size:12px;color:var(--tx3);margin-top:6px;line-height:1.45}
+.bar{height:7px;background:var(--card2);border-radius:4px;overflow:hidden}
+.bar>i{display:block;height:100%;border-radius:4px;transition:width .3s}
+.ok{color:var(--ok)}.warn{color:var(--warn)}.bad{color:var(--bad)}.acc{color:var(--acc)}.ice{color:var(--ice)}
+button{font:inherit;cursor:pointer}
+.btn{width:100%;background:var(--acc);border:0;color:#08121f;font-weight:650;border-radius:11px;padding:14px;font-size:15px}
+.btn:active{filter:brightness(.9)}
+.btn.gh{background:transparent;border:1px solid var(--line);color:var(--tx2);font-weight:500;padding:11px;font-size:13.5px}
+.btn.sm{padding:10px;font-size:13.5px}
+.btn:disabled{opacity:.4}
+input,select,textarea{width:100%;background:var(--bg);border:1px solid var(--line);color:var(--tx);
+  border-radius:10px;padding:12px;font:inherit;margin-bottom:10px}
+textarea{resize:vertical;min-height:58px}
+textarea.mono{font:11px/1.4 ui-monospace,Menlo,Consolas,monospace;min-height:90px}
+label{display:block;font-size:10.5px;letter-spacing:.07em;text-transform:uppercase;color:var(--tx3);margin:0 0 5px}
+.chips{display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap}
+.chip{background:var(--card2);border:1px solid var(--line);color:var(--tx2);border-radius:20px;padding:7px 13px;font-size:13px}
+.chip.on{background:var(--acc);color:#08121f;border-color:var(--acc);font-weight:600}
+.chip.sm{padding:6px 11px;font-size:12px}
+.status{border-radius:12px;padding:14px;margin-bottom:12px;font-size:14px;line-height:1.45}
+.s-ok{background:rgba(74,222,128,.09);border:1px solid rgba(74,222,128,.28)}
+.s-warn{background:rgba(251,191,36,.09);border:1px solid rgba(251,191,36,.28)}
+.s-bad{background:rgba(248,113,113,.09);border:1px solid rgba(248,113,113,.28)}
+.s-ice{background:rgba(125,211,252,.09);border:1px solid rgba(125,211,252,.28)}
+.status b{display:block;font-size:15px;margin-bottom:2px}
+.status span{color:var(--tx2);font-size:13px}
+.next{display:flex;align-items:center;gap:11px}
+.next .dot{flex:0 0 9px;height:9px;border-radius:50%}
+.next b{font-size:14.5px;font-weight:600}
+.mod{display:flex;gap:11px;align-items:center;padding:10px 0;border-bottom:1px solid var(--line)}
+.mod:last-child{border-bottom:0}
+.tick{flex:0 0 21px;height:21px;border-radius:6px;border:1.5px solid var(--line);
+  display:grid;place-items:center;font-size:12px;background:var(--card2)}
+.mod.done .tick{background:var(--ok);border-color:var(--ok);color:#06240f}
+.mod .m-t{flex:1;font-size:14px}
+.mod.done .m-t{color:var(--tx3);text-decoration:line-through}
+.mod .m-h{font-size:11.5px;color:var(--tx3);font-variant-numeric:tabular-nums;white-space:nowrap}
+.mod .m-bar{height:4px;background:var(--card2);border-radius:2px;margin-top:5px;overflow:hidden}
+.mod .m-bar>i{display:block;height:100%}
+.trk{display:flex;align-items:baseline;gap:8px;margin-bottom:2px}
+.trk b{font-size:14.5px}
+.tag{font-size:9.5px;letter-spacing:.06em;text-transform:uppercase;padding:2px 7px;border-radius:5px;
+  background:var(--card2);color:var(--tx3);font-weight:600}
+.log{display:flex;gap:10px;padding:10px 0;border-bottom:1px solid var(--line);font-size:13.5px}
+.log:last-child{border-bottom:0}
+.log .d{color:var(--tx3);font-variant-numeric:tabular-nums;white-space:nowrap;flex:0 0 52px}
+.log .m{font-variant-numeric:tabular-nums;flex:0 0 46px;text-align:right;color:var(--acc)}
+nav{position:fixed;bottom:0;left:0;right:0;background:rgba(20,23,29,.95);backdrop-filter:blur(12px);
+  border-top:1px solid var(--line);display:flex;padding-bottom:env(safe-area-inset-bottom)}
+nav button{flex:1;background:none;border:0;color:var(--tx3);padding:11px 0 13px;font-size:10.5px;
+  display:flex;flex-direction:column;align-items:center;gap:4px}
+nav button.on{color:var(--acc)}
+nav svg{width:21px;height:21px;stroke:currentColor;fill:none;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+.wk{display:flex;gap:4px;margin-top:10px}
+.wk div{flex:1;text-align:center}
+.wk i{display:block;height:28px;border-radius:5px;background:var(--card2);position:relative;overflow:hidden}
+.wk i b{position:absolute;bottom:0;left:0;right:0;display:block}
+.wk i.fz{background:rgba(125,211,252,.22)}
+.wk span{font-size:9.5px;color:var(--tx3);display:block;margin-top:4px}
+.split{display:flex;height:9px;border-radius:5px;overflow:hidden;background:var(--card2);margin:9px 0 7px}
+.split i{display:block;height:100%}
+.legend{display:flex;gap:12px;flex-wrap:wrap;font-size:11.5px;color:var(--tx3)}
+.legend span{display:flex;align-items:center;gap:5px}
+.legend em{width:8px;height:8px;border-radius:2px;display:block}
+.empty{color:var(--tx3);font-size:13px;padding:14px 0;text-align:center}
+.spark{width:100%;height:44px;display:block;margin-top:6px}
+.two{display:flex;gap:8px}.two>*{flex:1}
+.msg{font-size:12px;margin-top:8px}
+</style>
+</head>
+<body>
+<main>
+  <h1><span id="h-title">Today</span><small id="h-day"></small></h1>
+  <div id="view"></div>
+</main>
+<nav>
+  <button data-v="today" class="on"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>Today</button>
+  <button data-v="road"><svg viewBox="0 0 24 24"><path d="M4 19V5M4 8h9l-1.5 3L13 14H4"/><path d="M20 19V5"/></svg>Roadmap</button>
+  <button data-v="stats"><svg viewBox="0 0 24 24"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>Pace</button>
+  <button data-v="log"><svg viewBox="0 0 24 24"><path d="M5 4h14v16H5z"/><path d="M9 9h6M9 13h6M9 17h3"/></svg>Log</button>
+</nav>
+
+<script>
+"use strict";
+/* ==========================================================================
+   Career Track v3 — Full Stack primary. ERPNext / Salesforce = branches.
+   Rules: sessions are append-only; nothing stores "progress".
+          Freezes protect the streak. They never reduce the weekly floor.
+   ========================================================================== */
+const KEY="ct-v3", DAY=86400000, FREEZE_LIMIT=4, FREEZE_WINDOW=30;
+
+const TRACKS=[
+ {id:"core",label:"Core",tag:"shared",kind:"shared",col:"var(--acc)",
+  name:"Core — shared by every path",
+  note:"Counts no matter which door opens. Tick what you already know.",
+  mods:[
+   {id:"c1",t:"JS deep: async, closures, modules, errors",h:12},
+   {id:"c2",t:"TypeScript fundamentals",h:8},
+   {id:"c3",t:"React: hooks, state, composition, forms",h:14},
+   {id:"c4",t:"SQL + data modelling: joins, indexes, normalisation",h:12},
+   {id:"c5",t:"Git, REST/API design, Postman",h:6},
+   {id:"c6",t:"Deployment: env config, CI, Docker basics",h:8}]},
+ {id:"proj",label:"Projects",tag:"shared",kind:"shared",col:"var(--ok)",
+  name:"Projects — shipped, public URL",
+  note:"The only part a hiring manager will see. Unshipped is worth zero.",
+  mods:[
+   {id:"p1",t:"P1: CRUD + auth app, deployed",h:20},
+   {id:"p2",t:"P2: real data + SQL reporting",h:20},
+   {id:"p3",t:"P3: capstone in your chosen branch",h:20}]},
+ {id:"mern",label:"MERN",tag:"primary",kind:"shared",col:"var(--cy)",
+  name:"MERN / Full Stack",
+  note:"The primary bet. This is the open door.",
+  mods:[
+   {id:"m1",t:"Node + Express fundamentals",h:10},
+   {id:"m2",t:"MongoDB + Mongoose",h:8},
+   {id:"m3",t:"Auth: JWT, sessions, hashing",h:8},
+   {id:"m4",t:"Testing: Vitest + Supertest",h:8},
+   {id:"m5",t:"Next.js basics",h:10}]},
+ {id:"erp",label:"ERPNext",tag:"branch A",kind:"branchA",col:"var(--vio)",
+  name:"ERPNext / Frappe",
+  note:"Your Tally background is a real edge here. Remote-friendly.",
+  mods:[
+   {id:"e1",t:"Python fluency for Frappe",h:12},
+   {id:"e2",t:"Frappe: DocTypes, hooks, permissions",h:14},
+   {id:"e3",t:"ERPNext functional modules",h:8},
+   {id:"e4",t:"Server scripts, REST API, integrations",h:10},
+   {id:"e5",t:"Deploy a custom app",h:8}]},
+ {id:"sf",label:"Salesforce",tag:"branch B",kind:"branchB",col:"var(--warn)",
+  name:"Salesforce — Apex + LWC",
+  note:"LWC reuses your JS. Apex reuses nothing else.",
+  mods:[
+   {id:"s1",t:"Apex fundamentals",h:14},
+   {id:"s2",t:"SOQL / SOSL + governor limits",h:8},
+   {id:"s3",t:"LWC — web components",h:14},
+   {id:"s4",t:"Triggers, async Apex, test classes",h:12},
+   {id:"s5",t:"Platform Developer I prep",h:12}]},
+ {id:"extra",label:"Extras",tag:"extras",kind:"extra",col:"var(--tx3)",
+  name:"Extras — outside the critical path",
+  note:"Never an excuse to skip Core or Projects.",
+  mods:[
+   {id:"x1",t:"DSA light for interviews",h:14},
+   {id:"x2",t:"System design basics",h:10},
+   {id:"x3",t:"Resume + GitHub rewrite",h:4}]}
+];
+
+const FRESH={ v:3, startedOn:today(), commitMin:45, weekdays:5, floorMin:150,
+  branch:null, sessions:[], forced:{}, freezes:[], gate:{applied:false} };
+
+let S=load(), view="today", openTrack="core", chosenMin=null, msg="";
+
+/* ---------- storage ---------- */
+function load(){
+  try{ const r=localStorage.getItem(KEY); if(!r) return migrate();
+    const s=JSON.parse(r);
+    s.sessions=s.sessions||[]; s.forced=s.forced||{}; s.freezes=s.freezes||[];
+    s.gate=s.gate||{applied:false}; if(s.branch===undefined) s.branch=null;
+    return s;
+  }catch(e){ return structuredClone(FRESH); }
+}
+function migrate(){                      // carry data over from v2 if present
+  const f=structuredClone(FRESH);
+  try{ const old=localStorage.getItem("ct-v2");
+    if(old){ const o=JSON.parse(old);
+      f.startedOn=o.startedOn||f.startedOn; f.sessions=o.sessions||[];
+      f.forced=o.forced||{}; f.branch=o.branch||null; f.gate=o.gate||{applied:false}; }
+  }catch(e){}
+  return f;
+}
+function save(){ try{ localStorage.setItem(KEY,JSON.stringify(S)); }catch(e){} }
+
+/* ---------- dates ---------- */
+function today(){ return new Date(Date.now()-new Date().getTimezoneOffset()*60000).toISOString().slice(0,10); }
+function dObj(s){ return new Date(s+"T00:00:00"); }
+function diffDays(a,b){ return Math.round((dObj(b)-dObj(a))/DAY); }
+function shift(s,n){ const x=dObj(s); x.setDate(x.getDate()+n);
+  return new Date(x.getTime()-x.getTimezoneOffset()*60000).toISOString().slice(0,10); }
+function fmt(s){ return dObj(s).toLocaleDateString(undefined,{day:"numeric",month:"short"}); }
+function fmtLong(s){ return dObj(s).toLocaleDateString(undefined,{day:"numeric",month:"short",year:"numeric"}); }
+function isWeekend(s){ const d=dObj(s).getDay(); return d===0||d===6; }
+function dow(s){ return (dObj(s).getDay()+6)%7; }
+function mondayOf(s){ return shift(s,-dow(s)); }
+function weekNo(){ return Math.floor(diffDays(S.startedOn,today())/7)+1; }
+
+/* ---------- freezes ---------- */
+const frozen=d=>S.freezes.indexOf(d)>=0;
+function freezesUsed(){ const cut=shift(today(),-(FREEZE_WINDOW-1));
+  return S.freezes.filter(d=>d>=cut).length; }
+const freezesLeft=()=>Math.max(0,FREEZE_LIMIT-freezesUsed());
+
+/* ---------- lookups ---------- */
+const allMods=()=>TRACKS.flatMap(t=>t.mods.map(m=>Object.assign({},m,{track:t})));
+const modById=id=>allMods().find(m=>m.id===id);
+const trackOf=id=>{ const m=modById(id); return m?m.track:null; };
+
+/* ---------- derivations (never stored) ---------- */
+const minsOn=d=>S.sessions.filter(x=>x.date===d).reduce((a,b)=>a+b.min,0);
+const minsInWeek=mon=>S.sessions.filter(x=>mondayOf(x.date)===mon).reduce((a,b)=>a+b.min,0);
+const totalMin=()=>S.sessions.reduce((a,b)=>a+b.min,0);
+const modMin=id=>S.sessions.filter(x=>x.mod===id).reduce((a,b)=>a+b.min,0);
+const modDone=m=>!!S.forced[m.id]||modMin(m.id)>=m.h*60;
+const trackMin=t=>S.sessions.filter(x=>{const k=trackOf(x.mod);return k&&k.id===t;}).reduce((a,b)=>a+b.min,0);
+const trackBudget=t=>t.mods.reduce((a,m)=>a+m.h,0);
+const scopeTracks=()=>TRACKS.filter(t=>t.kind==="shared"||(S.branch&&t.id===S.branch));
+const scopeBudget=()=>scopeTracks().reduce((a,t)=>a+trackBudget(t),0);
+const remainingHours=()=>scopeTracks().flatMap(t=>t.mods)
+  .reduce((a,m)=>a+(modDone(m)?0:Math.max(0,m.h-modMin(m.id)/60)),0);
+
+/* next module to work on: first unfinished, in scope */
+function nextMod(){
+  return allMods().find(m=>!modDone(m)&&(m.track.kind==="shared"||m.track.id===S.branch))||null;
+}
+/* Streak: weekends AND freezes are skipped — they neither count nor break. */
+function streak(){
+  let n=0,cur=today();
+  if(!isWeekend(cur)&&!frozen(cur)&&minsOn(cur)===0) cur=shift(cur,-1);
+  for(let i=0;i<600;i++){
+    if(diffDays(S.startedOn,cur)<0) break;
+    if(isWeekend(cur)||frozen(cur)){ cur=shift(cur,-1); continue; }
+    if(minsOn(cur)>0){ n++; cur=shift(cur,-1); } else break;
+  }
+  return n;
+}
+function weekList(n){ const o=[]; let m=mondayOf(today());
+  for(let i=0;i<n;i++){ o.unshift(m); m=shift(m,-7); } return o; }
+function pace(){
+  const ws=weekList(4).filter(m=>diffDays(S.startedOn,shift(m,6))>=0);
+  if(!ws.length) return 0;
+  const full=ws.slice(0,-1), basis=full.length?full:ws;
+  return basis.reduce((a,m)=>a+minsInWeek(m),0)/basis.length/60;
+}
+const plannedWeekly=()=>S.commitMin*S.weekdays/60;
+const plannedDate=()=>shift(today(),Math.ceil(remainingHours()/plannedWeekly())*7);
+function projectedDate(){ const p=pace(); return p<0.25?null:shift(today(),Math.ceil(remainingHours()/p)*7); }
+function slipWeeks(){ const pj=projectedDate(); return pj?Math.round(diffDays(plannedDate(),pj)/7):null; }
+function focus(){
+  const cut=shift(today(),-27), b={shared:0,branchA:0,branchB:0,extra:0};
+  S.sessions.filter(s=>s.date>=cut).forEach(s=>{const t=trackOf(s.mod); if(t) b[t.kind]+=s.min;});
+  const tot=b.shared+b.branchA+b.branchB+b.extra;
+  return Object.assign({},b,{tot,bothBranches:b.branchA>300&&b.branchB>300,
+    sharedPct:tot?Math.round(b.shared/tot*100):0});
+}
+
+/* ---------- render helpers ---------- */
+const el=document.getElementById("view");
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const hrs=m=>(m/60).toFixed(1);
+
+/* Today's status. Deliberately about today only — no career strategy here. */
+function status(){
+  const tm=minsOn(today()), wk=minsInWeek(mondayOf(today())), st=streak(), left=5-Math.min(dow(today()),5);
+  if(frozen(today()))
+    return ["s-ice","Frozen today","Streak held at "+st+". The hours are still owed — clear them before Sunday. "+freezesLeft()+" freezes left."];
+  if(tm>=S.commitMin) return ["s-ok","Done","<b style='display:inline'>"+tm+" min</b> · streak "+st+" · week "+wk+"/"+S.floorMin+" min"];
+  if(tm>0) return ["s-warn","Partial — "+(S.commitMin-tm)+" min to go",tm+" of "+S.commitMin+" min logged."];
+  if(isWeekend(today()))
+    return [wk>=S.floorMin?"s-ok":"s-warn","Weekend",wk>=S.floorMin?"Week closed at "+wk+" min. Nothing owed.":"Week is at "+wk+"/"+S.floorMin+" min — this is when you clear debt."];
+  if(wk<S.floorMin&&left===0) return ["s-bad","Week below floor",wk+" of "+S.floorMin+" min. This week is a miss."];
+  return ["s-bad","Not started",S.commitMin+" minutes. "+(st>0?"A "+st+"-day streak is on the line.":"Start now, not tomorrow.")];
+}
+
+function viewToday(){
+  const s=status(), mon=mondayOf(today()), wk=minsInWeek(mon), tm=minsOn(today()), n=nextMod();
+  const days=[0,1,2,3,4,5,6].map(i=>{const d=shift(mon,i);
+    return {m:minsOn(d),fz:frozen(d),fut:diffDays(today(),d)>0,lab:"MTWTFSS"[i]};});
+  const peak=Math.max(S.commitMin,...days.map(x=>x.m));
+  const canFreeze=!isWeekend(today())&&!frozen(today())&&tm===0&&freezesLeft()>0;
+
+  return '<div class="status '+s[0]+'"><b>'+s[1]+'</b><span>'+s[2]+'</span></div>'
+  +(n?'<div class="card"><h2>Next up</h2><div class="next">'
+     +'<span class="dot" style="background:'+n.track.col+'"></span>'
+     +'<div style="flex:1"><b>'+esc(n.t)+'</b><div class="sub" style="margin:1px 0 0">'+n.track.label
+     +' · '+hrs(modMin(n.id))+' of '+n.h+' h</div></div></div></div>'
+    :'<div class="card"><div class="empty">Everything in scope is done. Pick a branch or add modules.</div></div>')
+  +'<div class="card"><h2>Log today</h2>'
+   +'<div class="chips" id="minchips">'+[15,25,45,60,90].map(m=>'<button class="chip" data-min="'+m+'">'+m+'m</button>').join("")+'</div>'
+   +'<select id="s-mod">'+TRACKS.map(t=>'<optgroup label="'+esc(t.name)+'">'+t.mods.map(m=>
+      '<option value="'+m.id+'"'+(n&&m.id===n.id?" selected":"")+'>'+(modDone(m)?"✓ ":"")+esc(m.t)+'</option>').join("")+'</optgroup>').join("")+'</select>'
+   +'<textarea id="s-note" placeholder="What exactly did you do? &quot;Learned React&quot; is useless in three months."></textarea>'
+   +'<button class="btn" id="s-add">Append session</button>'
+   +(msg?'<div class="msg bad">'+esc(msg)+'</div>':"")
+   +'</div>'
+  +'<div class="card"><h2>This week</h2>'
+   +'<div class="row"><div><div class="lbl">Minutes</div><div class="big '+(wk>=S.floorMin?"ok":"warn")+'">'+wk+'<span class="u">/'+S.floorMin+'</span></div></div>'
+   +'<div><div class="lbl">Streak</div><div class="big">'+streak()+'<span class="u">d</span></div></div>'
+   +'<div><div class="lbl">Freezes left</div><div class="big ice">'+freezesLeft()+'<span class="u">/'+FREEZE_LIMIT+'</span></div></div></div>'
+   +'<div class="wk">'+days.map(x=>'<div><i class="'+(x.fz?"fz":"")+'">'
+     +(x.fut||x.fz?"":'<b style="height:'+Math.round(x.m/peak*100)+'%;background:'+(x.m>=S.commitMin?"var(--ok)":x.m?"var(--warn)":"var(--card2)")+'"></b>')
+     +'</i><span>'+x.lab+'</span></div>').join("")+'</div>'
+   +(canFreeze?'<button class="btn gh" id="fz" style="margin-top:12px">Freeze today — can\'t study</button>'
+      +'<div class="sub">Protects the streak. Does not lower the '+S.floorMin+'-minute week. '+freezesLeft()+' left in 30 days.</div>'
+     :frozen(today())?'<button class="btn gh" id="unfz" style="margin-top:12px">Undo freeze</button>'
+     :freezesLeft()===0&&!isWeekend(today())?'<div class="sub" style="margin-top:12px">No freezes left in this 30-day window.</div>':"")
+   +'</div>';
+}
+
+function viewRoad(){
+  const rem=remainingHours(), bud=scopeBudget(), pd=plannedDate(), pj=projectedDate(), sl=slipWeeks();
+  const t=TRACKS.find(x=>x.id===openTrack)||TRACKS[0];
+  const tb=trackBudget(t), tmh=trackMin(t.id)/60, dn=t.mods.filter(modDone).length;
+  const br=S.branch?TRACKS.find(x=>x.id===S.branch):null;
+  return '<div class="card"><div class="lbl">Destination — Full Stack Developer</div>'
+   +'<div class="big">'+(bud-rem).toFixed(1)+'<span class="u"> / '+bud+' h in scope</span></div>'
+   +'<div class="bar" style="margin-top:10px"><i style="width:'+Math.round((bud-rem)/bud*100)+'%;background:var(--acc)"></i></div>'
+   +'<div class="row" style="margin-top:14px">'
+    +'<div><div class="lbl">At your commitment</div><div style="font-weight:600">'+fmtLong(pd)+'</div><div class="sub" style="margin-top:2px">'+plannedWeekly().toFixed(2)+' h/wk</div></div>'
+    +'<div><div class="lbl">At your actual pace</div><div style="font-weight:600" class="'+(pj===null?"bad":sl>1?"warn":"ok")+'">'+(pj?fmtLong(pj):"no pace yet")+'</div>'
+     +'<div class="sub" style="margin-top:2px">'+pace().toFixed(2)+' h/wk'+(sl>0?" · "+sl+" wk later":"")+'</div></div></div></div>'
+
+  +'<div class="card"><h2>Job search</h2>'
+   +'<div class="mod '+(S.gate.applied?"done":"")+'" data-gate="1"><div class="tick">'+(S.gate.applied?"✓":"")+'</div>'
+   +'<div class="m-t">Applied to your brother\'s company (full stack)</div></div>'
+   +'<div class="sub">The role is open now. Worth more than months of study, and it expires.</div></div>'
+
+  +'<div class="card"><h2>Branch — decide at week 8</h2><div class="chips">'
+   +[["","Undecided"],["erp","ERPNext"],["sf","Salesforce"]].map(o=>
+      '<button class="chip sm'+((S.branch||"")===o[0]?" on":"")+'" data-branch="'+o[0]+'">'+o[1]+'</button>').join("")
+   +'</div><div class="sub">'+(br?"In scope: "+esc(br.name):"Undecided is correct in week "+weekNo()+". Core + MERN serves both.")+'</div></div>'
+
+  +'<div class="card"><div class="chips">'
+   +TRACKS.map(x=>'<button class="chip sm'+(x.id===openTrack?" on":"")+'" data-trk="'+x.id+'">'+x.label+'</button>').join("")
+   +'</div><div class="trk"><b>'+esc(t.name)+'</b><span class="tag">'+t.tag+'</span></div>'
+   +'<div class="sub" style="margin:0 0 12px">'+esc(t.note)+'</div>'
+   +'<div class="bar"><i style="width:'+Math.min(100,Math.round(tmh/tb*100))+'%;background:'+t.col+'"></i></div>'
+   +'<div class="sub" style="margin-bottom:4px">'+tmh.toFixed(1)+' / '+tb+' h · '+dn+'/'+t.mods.length+' modules</div>'
+   +t.mods.map(m=>'<div class="mod '+(modDone(m)?"done":"")+'" data-mod="'+m.id+'"><div class="tick">'+(modDone(m)?"✓":"")+'</div>'
+     +'<div class="m-t">'+esc(m.t)+'<div class="m-bar"><i style="width:'+Math.min(100,Math.round(modMin(m.id)/60/m.h*100))+'%;background:'+t.col+'"></i></div></div>'
+     +'<div class="m-h">'+hrs(modMin(m.id))+'/'+m.h+'h</div></div>').join("")
+   +'<div class="sub">Tap a module to mark it already known — it leaves scope and the dates recompute.</div></div>';
+}
+
+function viewStats(){
+  const ws=weekList(12), vals=ws.map(m=>minsInWeek(m)/60);
+  const peak=Math.max(plannedWeekly(),...vals,1), w=100/ws.length;
+  const closed=ws.filter((m,i)=>i<ws.length-1&&diffDays(S.startedOn,shift(m,6))>=0).length;
+  const kept=ws.filter((m,i)=>i<ws.length-1&&minsInWeek(m)>=S.floorMin).length;
+  const days=new Set(S.sessions.map(s=>s.date)).size;
+  let wd=0; for(let i=0;i<=diffDays(S.startedOn,today());i++){const d=shift(S.startedOn,i);
+    if(!isWeekend(d)&&!frozen(d)) wd++;} wd=Math.max(1,wd);
+  const f=focus(), seg=(k,c)=>f.tot?'<i style="width:'+(f[k]/f.tot*100)+'%;background:'+c+'"></i>':"";
+  const note=f.bothBranches?'<span class="bad">Two branches at once. They share no code — pick one.</span>'
+    :f.sharedPct<50?"Under 50% shared is a warning sign this early.":"Healthy — the shared core is doing the work.";
+  return '<div class="card"><div class="row">'
+   +'<div><div class="lbl">Logged</div><div class="big">'+hrs(totalMin())+'<span class="u">h</span></div></div>'
+   +'<div><div class="lbl">Show-up</div><div class="big '+(days/wd>=.8?"ok":days/wd>=.5?"warn":"bad")+'">'+Math.round(days/wd*100)+'<span class="u">%</span></div>'
+    +'<div class="sub" style="margin-top:2px">'+days+'/'+wd+' days</div></div>'
+   +'<div><div class="lbl">Weeks at floor</div><div class="big">'+kept+'<span class="u">/'+closed+'</span></div></div></div>'
+   +'<div class="sub">Show-up excludes frozen days, so a freeze cannot dent this number — but it cannot inflate it either.</div></div>'
+  +'<div class="card"><h2>Hours per week — dashed = commitment</h2>'
+   +'<svg class="spark" viewBox="0 0 100 40" preserveAspectRatio="none">'
+   +vals.map((v,i)=>'<rect x="'+(i*w+w*.16)+'" y="'+(38-(v/peak)*36)+'" width="'+(w*.68)+'" height="'
+     +Math.max(v>0?1:0,(v/peak)*36)+'" rx=".7" fill="'+(v>=S.floorMin/60?"var(--ok)":v>0?"var(--warn)":"var(--card2)")+'"/>').join("")
+   +'<line x1="0" y1="'+(38-(plannedWeekly()/peak)*36)+'" x2="100" y2="'+(38-(plannedWeekly()/peak)*36)+'" stroke="var(--tx3)" stroke-width=".4" stroke-dasharray="2 2"/>'
+   +'<line x1="0" y1="38.5" x2="100" y2="38.5" stroke="var(--line)" stroke-width=".4"/></svg>'
+   +'<div class="sub">12 weeks, oldest left. Green cleared the '+S.floorMin+'-min floor.</div></div>'
+  +'<div class="card"><h2>Last 28 days</h2>'
+   +(f.tot?'<div class="split">'+seg("shared","var(--acc)")+seg("branchA","var(--vio)")+seg("branchB","var(--warn)")+seg("extra","var(--tx3)")+'</div>'
+     +'<div class="legend"><span><em style="background:var(--acc)"></em>Shared '+hrs(f.shared)+'h</span>'
+      +'<span><em style="background:var(--vio)"></em>ERPNext '+hrs(f.branchA)+'h</span>'
+      +'<span><em style="background:var(--warn)"></em>Salesforce '+hrs(f.branchB)+'h</span>'
+      +'<span><em style="background:var(--tx3)"></em>Extras '+hrs(f.extra)+'h</span></div>'
+     +'<div class="sub">'+f.sharedPct+'% on work that pays off whichever door opens. '+note+'</div>'
+    :'<div class="empty">Nothing logged in the last 28 days.</div>')+'</div>'
+  +'<div class="card"><h2>Freezes used — last 30 days</h2>'
+   +'<div class="big ice">'+freezesUsed()+'<span class="u">/'+FREEZE_LIMIT+'</span></div>'
+   +(S.freezes.length?'<div class="sub">'+S.freezes.slice(-8).map(fmt).join(" · ")+'</div>':'<div class="sub">None used.</div>')
+   +'<div class="sub">If you hit 4 every month, the commitment is wrong, not you. Tell me and we lower it.</div></div>'
+  +'<div class="card"><h2>Backup / transfer between devices</h2>'
+   +'<div class="two"><button class="btn gh" id="ex">Show my data</button><button class="btn gh" id="dl">Download file</button></div>'
+   +'<textarea class="mono" id="exbox" placeholder="Tap Show my data, then copy this text" readonly></textarea>'
+   +'<label style="margin-top:4px">Paste data from another device</label>'
+   +'<textarea class="mono" id="imbox" placeholder="Paste the JSON here"></textarea>'
+   +'<button class="btn sm" id="im">Merge it in</button>'
+   +'<div class="sub" id="imsg">Merge is safe both ways — sessions are matched by id, so nothing is lost or duplicated. Do it on both devices and they end up identical.</div></div>'
+  +'<div class="card"><h2>Reset</h2><button class="btn gh" id="wipe">Erase everything</button>'
+   +'<div class="sub">Only if the goal changed. Wiping to hide a bad week is lying to yourself.</div></div>';
+}
+
+function viewLog(){
+  const rows=S.sessions.slice().sort((a,b)=>b.date.localeCompare(a.date)||b.id-a.id);
+  const fz=S.freezes.slice().sort().reverse();
+  if(!rows.length&&!fz.length) return '<div class="card"><div class="empty">Nothing logged yet.<br>The first entry is the only one that matters today.</div></div>';
+  return '<div class="card"><h2>'+rows.length+' sessions · '+hrs(totalMin())+' h</h2>'
+   +rows.map(r=>{const m=modById(r.mod);
+     return '<div class="log"><div class="d">'+fmt(r.date)+'</div><div style="flex:1"><div>'+esc(r.note||"—")+'</div>'
+      +'<div class="sub" style="margin:0">'+(m?esc(m.t):"—")+'</div></div><div class="m">'+r.min+'m</div></div>';}).join("")
+   +'</div>'
+   +(fz.length?'<div class="card"><h2>'+fz.length+' frozen days</h2>'
+      +fz.map(d=>'<div class="log"><div class="d">'+fmt(d)+'</div><div style="flex:1" class="ice">frozen</div><div class="m ice">—</div></div>').join("")+'</div>':"");
+}
+
+function render(){
+  const T={today:"Today",road:"Roadmap",stats:"Pace",log:"Log"};
+  document.getElementById("h-title").textContent=T[view];
+  document.getElementById("h-day").textContent="week "+weekNo()+" · day "+(diffDays(S.startedOn,today())+1);
+  el.innerHTML=view==="today"?viewToday():view==="road"?viewRoad():view==="stats"?viewStats():viewLog();
+  wire();
+}
+
+function wire(){
+  const ch=el.querySelector("#minchips");
+  if(ch){ if(chosenMin===null) chosenMin=S.commitMin;
+    Array.prototype.forEach.call(ch.children,function(b){
+      b.classList.toggle("on",+b.dataset.min===chosenMin);
+      b.onclick=function(){ chosenMin=+b.dataset.min;
+        Array.prototype.forEach.call(ch.children,function(x){x.classList.toggle("on",x===b);}); }; }); }
+  const add=el.querySelector("#s-add");
+  if(add) add.onclick=function(){
+    const ta=el.querySelector("#s-note"), note=ta.value.trim();
+    if(note.length<8){ msg="Too vague — write what you actually built or read."; render(); return; }
+    msg=""; S.sessions.push({id:Date.now(),date:today(),min:chosenMin==null?S.commitMin:chosenMin,
+      mod:el.querySelector("#s-mod").value,note:note}); save(); render(); };
+  const fz=el.querySelector("#fz");
+  if(fz) fz.onclick=function(){ if(freezesLeft()<=0) return;
+    S.freezes.push(today()); save(); render(); };
+  const un=el.querySelector("#unfz");
+  if(un) un.onclick=function(){ S.freezes=S.freezes.filter(d=>d!==today()); save(); render(); };
+  el.querySelectorAll("[data-mod]").forEach(function(n){ n.onclick=function(){
+    const id=n.dataset.mod, m=modById(id);
+    if(modMin(id)>=m.h*60) return;                 // earned by hours — cannot untick
+    if(S.forced[id]) delete S.forced[id]; else S.forced[id]=true; save(); render(); }; });
+  el.querySelectorAll("[data-trk]").forEach(function(n){ n.onclick=function(){openTrack=n.dataset.trk;render();}; });
+  el.querySelectorAll("[data-branch]").forEach(function(n){ n.onclick=function(){
+    S.branch=n.dataset.branch||null; save(); render(); }; });
+  const g=el.querySelector("[data-gate]");
+  if(g) g.onclick=function(){ S.gate.applied=!S.gate.applied; save(); render(); };
+
+  const ex=el.querySelector("#ex");
+  if(ex) ex.onclick=function(){ const b=el.querySelector("#exbox");
+    b.value=JSON.stringify(S); b.select();
+    if(navigator.clipboard) navigator.clipboard.writeText(b.value).catch(function(){}); };
+  const dl=el.querySelector("#dl");
+  if(dl) dl.onclick=function(){
+    const blob=new Blob([JSON.stringify(S,null,1)],{type:"application/json"});
+    const a=document.createElement("a"); a.href=URL.createObjectURL(blob);
+    a.download="career-track-"+today()+".json"; a.click(); URL.revokeObjectURL(a.href); };
+  const im=el.querySelector("#im");
+  if(im) im.onclick=function(){
+    const out=el.querySelector("#imsg");
+    try{
+      const inc=JSON.parse(el.querySelector("#imbox").value);
+      if(!inc||!Array.isArray(inc.sessions)) throw new Error("not a Career Track export");
+      const seen={}; const merged=[];
+      S.sessions.concat(inc.sessions).forEach(function(s){ if(!seen[s.id]){seen[s.id]=1;merged.push(s);} });
+      S.sessions=merged.sort(function(a,b){return a.date.localeCompare(b.date);});
+      S.freezes=Array.from(new Set(S.freezes.concat(inc.freezes||[]))).sort();
+      Object.keys(inc.forced||{}).forEach(function(k){ S.forced[k]=true; });
+      S.gate.applied=S.gate.applied||!!(inc.gate&&inc.gate.applied);
+      S.branch=S.branch||inc.branch||null;
+      if(inc.startedOn&&inc.startedOn<S.startedOn) S.startedOn=inc.startedOn;
+      save();
+      out.className="sub ok";
+      out.textContent="Merged. "+S.sessions.length+" sessions total, "+S.freezes.length+" frozen days.";
+      setTimeout(render,1200);
+    }catch(e){ out.className="sub bad"; out.textContent="Could not read that: "+e.message; }
+  };
+  const wp=el.querySelector("#wipe");
+  if(wp) wp.onclick=function(){ if(confirm("Erase everything and start from zero?")){
+    S=structuredClone(FRESH); S.startedOn=today(); save(); render(); } };
+}
+
+document.querySelectorAll("nav button").forEach(function(b){ b.onclick=function(){
+  view=b.dataset.v; msg="";
+  document.querySelectorAll("nav button").forEach(function(x){x.classList.toggle("on",x===b);});
+  window.scrollTo(0,0); render(); }; });
+
+render();
+if("serviceWorker" in navigator)
+  window.addEventListener("load",function(){navigator.serviceWorker.register("sw.js").catch(function(){});});
+</script>
+</body>
+</html>
